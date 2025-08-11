@@ -26,6 +26,9 @@ public class SubscriptionRequestDto {
     @Pattern(regexp = "30|90|180|365", message = "반복 주기는 30/90/180/365 중 하나여야 합니다.")
     private Integer repeatCycleDays; // 30, 90, 180, 365 중 택 1
 
-    private boolean autoPayment = false;
-    private boolean isShared = false;
+    @NotNull
+    private Boolean autoPayment;
+
+    @NotNull
+    private Boolean isShared;
 }
