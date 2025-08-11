@@ -134,7 +134,7 @@ public class SubscriptionService {
 
     @Transactional
     public Page<SubscriptionListItemDto> list(Long userId, Pageable pageable) {
-        Page<Subscription> page = subscriptionRepository.findByUser_Id(userId, pageable);
+        Page<Subscription> page = subscriptionRepository.findByUserId(userId, pageable);
         LocalDate today = LocalDate.now();
         return page.map(s -> {
             String name = (s.getService()!=null)? s.getService().getName() : s.getCustomService().getName();
@@ -158,4 +158,21 @@ public class SubscriptionService {
         return subscriptionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
     }
+    @Transactional
+    public Page<SubscriptionListItemDto> listUpcoming(Long userId, Pageable pageable) {
+        Page<SubscriptionListRow> page = subscriptionRepository.findUpcomingOrder(userId, pageable);
+        return page.map(r -> SubscriptionListItemDto.builder()
+                .id(r.getId())
+                .serviceName(r.getServiceName())
+                .logoUrl(r.getLogoUrl())
+                .amount(r.getAmount())
+                .repeatCycleDays(r.getRepeatCycleDays())
+                .nextBillingDate(r.getNextBillingDate().toString())
+                .remainingDays(r.getRemainingDays().longValue())
+                .autoPayment(r.getAutoPayment())
+                .shared(r.getIsShared())
+                .build());
+    }
+
+
 }

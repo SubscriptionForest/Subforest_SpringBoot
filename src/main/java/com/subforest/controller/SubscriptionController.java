@@ -48,4 +48,12 @@ public class SubscriptionController {
     public ResponseEntity<Subscription> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(subscriptionService.getOneEntity(id));
     }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<Page<SubscriptionListItemDto>> listUpcoming(
+            @RequestParam Long userId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(subscriptionService.listUpcoming(userId, pageable));
+    }
+
 }
