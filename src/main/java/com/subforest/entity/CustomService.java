@@ -7,6 +7,13 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/*
+ * CustomService: 사용자 정의 서비스 (user 소유).
+ * - name, logoUrl(기본값), createdAt
+ * - @JoinColumn(name="user_id") 명시, @PrePersist로 기본값/시간 세팅
+ */
+
+
 @Entity
 @Table(name = "custom_services")
 @Getter @Setter @NoArgsConstructor

@@ -9,6 +9,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+/*
+ * Subscription: 구독 엔티티.
+ * - user(필수), service/customService(택1, DB상 둘 다 nullable)
+ * - startDate + repeatCycleDays로 다음 결제일/남은일수 계산 헬퍼 제공
+ * - createdAt은 @PrePersist에서 세팅
+ * 주의: service_id와 custom_service_id 매핑 컬럼 혼동 금지
+ */
+
 @Entity
 @Table(name = "subscriptions")
 @Getter

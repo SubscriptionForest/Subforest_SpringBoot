@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// 공통 서비스 검색 엔드포인트 제공(자동완성/검색 바 용도)
+// GET/services/search?q=키워드 -> ServiceCatalogService.search(q)호출 -> [ServiceSearchResultDto] 반환
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/services")

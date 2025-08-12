@@ -5,6 +5,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
+/*
+ * SubscriptionRequestDto:
+ * - 생성/수정 요청용 DTO
+ * - 형식 검증은 @Valid, 비즈니스 검증(XOR, 허용 주기)은 Service에서 처리
+ */
+
 @Data
 public class SubscriptionRequestDto {
 

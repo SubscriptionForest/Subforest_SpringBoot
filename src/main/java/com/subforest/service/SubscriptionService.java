@@ -11,6 +11,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/*
+ * SubscriptionService:
+ * - create/update/delete/list/listUpcoming/business 검증 로직 담당
+ * - list: JPA 기본 목록 + DTO 매핑
+ * - listUpcoming: 네이티브 쿼리 결과(Projection) → DTO 매핑 (임박순)
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService {
@@ -20,6 +27,7 @@ public class SubscriptionService {
     private final ServiceRepository serviceRepository;
     private final CustomServiceRepository customServiceRepository;
 
+    //검증: serviceId XOR customServiceId, repeatCycleDays 허용값, 날짜 파싱
     @Transactional
     public SubscriptionResponseDto create(SubscriptionRequestDto req) {
         if ((req.getServiceId() == null) == (req.getCustomServiceId() == null)) {
@@ -72,6 +80,7 @@ public class SubscriptionService {
                 .build();
     }
 
+    //동일 검증 + 서비스 전환 시 한쪽 null 처리
     @Transactional
     public SubscriptionResponseDto update(Long id, SubscriptionRequestDto req) {
         Subscription sub = subscriptionRepository.findById(id)
@@ -125,6 +134,7 @@ public class SubscriptionService {
                 .build();
     }
 
+    //존재 확인 후 삭제
     @Transactional
     public void delete(Long id) {
         Subscription sub = subscriptionRepository.findById(id)
@@ -132,6 +142,7 @@ public class SubscriptionService {
         subscriptionRepository.delete(sub);
     }
 
+    //기본 목록: JPA 조회 → 엔티티를 SubscriptionListItemDto로 매핑(헬퍼로 nextBillingDate/remainingDays 계산)
     @Transactional
     public Page<SubscriptionListItemDto> list(Long userId, Pageable pageable) {
         Page<Subscription> page = subscriptionRepository.findByUserId(userId, pageable);
@@ -153,11 +164,13 @@ public class SubscriptionService {
         });
     }
 
+    //단건 조회(디버그/상세)
     @Transactional
     public Subscription getOneEntity(Long id) {
         return subscriptionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
     }
+    //임박 순 목록: 네이티브 쿼리 결과(SubscriptionListRow)를 그대로 DTO로 매핑
     @Transactional
     public Page<SubscriptionListItemDto> listUpcoming(Long userId, Pageable pageable) {
         Page<SubscriptionListRow> page = subscriptionRepository.findUpcomingOrder(userId, pageable);

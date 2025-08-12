@@ -3,6 +3,11 @@ package com.subforest.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+/*
+ * SubscriptionListItemDto: 목록 표시용 DTO.
+ * - 다음 결제일/남은 일수 포함(목록 UI에 바로 반영 가능)
+ */
+
 @Getter
 @Builder
 public class SubscriptionListItemDto {

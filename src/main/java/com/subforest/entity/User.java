@@ -7,6 +7,13 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/*
+ * User: 계정 엔터티.
+ * - email unique, 비밀번호는 해시 저장(로그인/JWT 파트)
+ * - createdAt/updatedAt 수명주기 콜백으로 관리
+ */
+
+
 @Entity
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor

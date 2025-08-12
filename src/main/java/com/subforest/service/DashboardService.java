@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// 홈 화면에 필요한 요약 데이터(총 월 지출, 구독 개수, 파이/막대 데이터) 생성.
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -18,7 +19,7 @@ public class DashboardService {
 
     // 간단 집계(MVP): 카테고리는 아직 엔티티에 없으므로 서비스명 기반 샘플 분류
     public DashboardSummaryDto summary(Long userId) {
-        List<Subscription> list = subscriptionRepository.findByUser_Id(userId, org.springframework.data.domain.Pageable.unpaged()).getContent();
+        List<Subscription> list = subscriptionRepository.findByUserId(userId, org.springframework.data.domain.Pageable.unpaged()).getContent();
         int totalMonthly = list.stream()
                 .mapToInt(s -> monthlyAmount(s.getAmount(), s.getRepeatCycleDays()))
                 .sum();
@@ -45,7 +46,13 @@ public class DashboardService {
                 upcoming.put(next, upcoming.getOrDefault(next, 0) + s.getAmount());
             }
         }
-
+        /**
+         * summary(Long userId)
+         * totalMonthlySpend: 반복 주기를 월 기준으로 환산(30/90/180/365)
+         * activeCount: 구독 개수
+         * byCategory: 서비스명 기반 임시 분류(영상/음악/생산성/기타)로 금액 합산 → 원형 차트용
+         * upcomingPayments: 오늘~+14일 사이 다음 결제일 날짜별 금액 합산 → 막대 그래프용
+         */
         return DashboardSummaryDto.builder()
                 .totalMonthlySpend(totalMonthly)
                 .activeCount(activeCount)

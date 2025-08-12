@@ -7,6 +7,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+/*
+ * SubscriptionRepository:
+ * - findByUserId: 기본 목록 조회. 페이지네이션/정렬과 함께 사용
+ * - findUpcomingOrder: 다음 결제일을 DB에서 계산하여 임박순 정렬(네이티브)
+ *  (Projection DTO: SubscriptionListRow 로 결과 매핑)
+ *  계산식 핵심:
+
+        CURDATE() <= start_date면 start_date가 다음 결제일
+        아니면 (지난 일수/주기)+1회차만큼 더한 날짜가 다음 결제일
+        remainingDays = DATEDIFF(nextBillingDate, CURDATE())
+ */
+
+
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
     @Query(value = """
