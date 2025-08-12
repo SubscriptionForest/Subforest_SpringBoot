@@ -2,16 +2,18 @@ package com.subforest.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
-    public enum Status {
-        ACTIVE,
-        INACTIVE,
-        DELETED
-    }
+    public enum Status { ACTIVE, INACTIVE, DELETED }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,7 @@ public class User {
     private String name;
 
     @Column(nullable = false, length = 255)
-    private String password;
+    private String password; // bcrypt 해시
 
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -43,6 +45,4 @@ public class User {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    // 기본 생성자, getter/setter 또는 Lombok 사용 가능
 }

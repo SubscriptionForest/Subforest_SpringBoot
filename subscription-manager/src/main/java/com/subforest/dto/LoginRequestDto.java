@@ -1,8 +1,17 @@
 package com.subforest.dto;
 
-public class LoginRequestDto {
-    private String email;
-    private String password;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
-    // getter/setter
+@Getter
+@Setter
+public class LoginRequestDto {
+    @Email
+    @NotBlank
+    private String email;
+
+    @NotBlank
+    private String password;
 }
