@@ -17,27 +17,64 @@ public class DashboardService {
 
     private final SubscriptionRepository subscriptionRepository;
 
-    // 간단 집계(MVP): 카테고리는 아직 엔티티에 없으므로 서비스명 기반 샘플 분류
+    // 이름→카테고리 고정 매핑 (요청 목록만 분류, 나머지는 전부 "기타")
+    private static final Map<String, String> NAME_TO_CATEGORY = Map.ofEntries(
+            // OTT / 영상
+            Map.entry("넷플릭스", "영상"),
+            Map.entry("웨이브", "영상"),
+            Map.entry("티빙", "영상"),
+            Map.entry("디즈니플러스", "영상"),
+            Map.entry("왓챠", "영상"),
+            Map.entry("쿠팡플레이", "영상"),
+
+            // 음악
+            Map.entry("스포티파이", "음악"),
+            Map.entry("애플뮤직", "음악"),
+            Map.entry("멜론", "음악"),
+            Map.entry("유튜브뮤직", "음악"),
+            Map.entry("지니", "음악"),
+            Map.entry("플로", "음악"),
+            Map.entry("벅스", "음악"),
+
+            // 멤버십
+            Map.entry("네이버 플러스 멤버십", "기타"),
+            Map.entry("유튜브 프리미엄", "영상"), // 정책에 따라 조정 가능
+
+            //  전자책
+            Map.entry("밀리의서재", "전자책"),
+
+            // 생산성/소프트웨어 (영문 키도 허용)
+            Map.entry("notion", "생산성"),
+            Map.entry("chatgpt", "생산성"),
+            Map.entry("gemini", "생산성"),
+            Map.entry("adobe creative cloud", "생산성")
+    );
+
+    // 간단 집계(MVP): 카테고리는 아직 엔티티에 없으므로 서비스명 기반 매핑
     public DashboardSummaryDto summary(Long userId) {
-        List<Subscription> list = subscriptionRepository.findByUserId(userId, org.springframework.data.domain.Pageable.unpaged()).getContent();
+        List<Subscription> list = subscriptionRepository
+                .findByUserId(userId, org.springframework.data.domain.Pageable.unpaged())
+                .getContent();
+
         int totalMonthly = list.stream()
                 .mapToInt(s -> monthlyAmount(s.getAmount(), s.getRepeatCycleDays()))
                 .sum();
 
         int activeCount = list.size();
 
-        // 카테고리: 임시 규칙 (필요시 Service 엔티티에 category 추가)
+        // 카테고리 합계
         Map<String, Integer> byCat = new HashMap<>();
         for (Subscription s : list) {
-            String name = (s.getService()!=null)? s.getService().getName() : s.getCustomService().getName();
+            String name = (s.getService() != null) ? s.getService().getName()
+                    : s.getCustomService().getName();
             String cat = guessCategory(name);
             byCat.merge(cat, monthlyAmount(s.getAmount(), s.getRepeatCycleDays()), Integer::sum);
         }
 
-        // 7일간 예정 결제(막대그래프용)
+        // 2주치 예정 결제(막대그래프용)
         LocalDate today = LocalDate.now();
         Map<LocalDate, Integer> upcoming = new TreeMap<>();
-        for (int i=0; i<14; i++) { // 2주치
+        for (int i = 0; i < 14; i++) {
             upcoming.put(today.plusDays(i), 0);
         }
         for (Subscription s : list) {
@@ -46,13 +83,7 @@ public class DashboardService {
                 upcoming.put(next, upcoming.getOrDefault(next, 0) + s.getAmount());
             }
         }
-        /**
-         * summary(Long userId)
-         * totalMonthlySpend: 반복 주기를 월 기준으로 환산(30/90/180/365)
-         * activeCount: 구독 개수
-         * byCategory: 서비스명 기반 임시 분류(영상/음악/생산성/기타)로 금액 합산 → 원형 차트용
-         * upcomingPayments: 오늘~+14일 사이 다음 결제일 날짜별 금액 합산 → 막대 그래프용
-         */
+
         return DashboardSummaryDto.builder()
                 .totalMonthlySpend(totalMonthly)
                 .activeCount(activeCount)
@@ -68,19 +99,36 @@ public class DashboardService {
     private int monthlyAmount(int amount, int cycleDays) {
         // 거친 월환산(MVP): 30/90/180/365 기준
         switch (cycleDays) {
-            case 30: return amount;
-            case 90: return amount / 3;
+            case 30:  return amount;
+            case 90:  return amount / 3;
             case 180: return amount / 6;
             case 365: return Math.round(amount / 12f);
-            default: return amount;
+            default:  return amount;
         }
     }
 
+    // 이름 정규화 후, 고정 매핑에서 포함 순으로 매칭
     private String guessCategory(String name) {
-        String n = name.toLowerCase();
-        if (n.contains("netflix") || n.contains("티빙") || n.contains("웨이브") || n.contains("디즈니")) return "영상";
-        if (n.contains("spotify") || n.contains("멜론") || n.contains("지니")) return "음악";
-        if (n.contains("ms") || n.contains("office") || n.contains("adobe")) return "생산성";
+        if (name == null) return "기타";
+        String n = normalize(name);
+
+        // 완전 일치 우선
+        for (Map.Entry<String, String> e : NAME_TO_CATEGORY.entrySet()) {
+            String key = normalize(e.getKey());
+            if (n.equals(key)) return e.getValue();
+        }
+        // 포함 매칭 (예: "디즈니+","애플 뮤직" 등 변형)
+        for (Map.Entry<String, String> e : NAME_TO_CATEGORY.entrySet()) {
+            String key = normalize(e.getKey());
+            if (n.contains(key) || key.contains(n)) return e.getValue();
+        }
         return "기타";
+    }
+
+    private String normalize(String s) {
+        return s.trim().toLowerCase()
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("_", "");
     }
 }
