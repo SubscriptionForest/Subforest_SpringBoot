@@ -1,43 +1,64 @@
 package com.subforest.controller;
 
-import com.subforest.dto.JwtResponse;
-import com.subforest.dto.LoginRequestDto;
-import com.subforest.dto.SignupRequestDto;
+import com.subforest.config.JwtTokenProvider;
 import com.subforest.entity.User;
 import com.subforest.repository.UserRepository;
-import com.subforest.security.CustomUserDetails;
-import com.subforest.service.AuthService;
-import jakarta.validation.Valid;
+import com.subforest.service.BlacklistService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final BlacklistService blacklistService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestDto dto) {
-        authService.signup(dto);
-        return ResponseEntity.ok("회원가입 성공");
+    public String signup(@RequestBody User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+        return "회원가입 성공";
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequestDto dto) {
-        String token = authService.login(dto.getEmail(), dto.getPassword());
-        return ResponseEntity.ok(new JwtResponse(token));
+    public String login(@RequestBody User user) {
+        User found = userRepository.findByUsername(user.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없음"));
+
+        if (!passwordEncoder.matches(user.getPassword(), found.getPassword())) {
+            throw new RuntimeException("비밀번호 불일치");
+        }
+
+        return jwtTokenProvider.createToken(found.getUsername());
     }
 
-    // 예시: 보호된 엔드포인트 - 인증된 사용자 정보 주입
-    @GetMapping("/me")
-    public ResponseEntity<?> me(@AuthenticationPrincipal CustomUserDetails principal) {
-        if (principal == null) return ResponseEntity.status(401).body("Unauthorized");
-        // principal.getUsername() => email
-        return ResponseEntity.ok("Hello, " + principal.getUsername());
+    @PostMapping("/logout")
+    public String logout(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        blacklistService.addToBlacklist(token);
+        return "로그아웃 완료";
     }
+
+    @DeleteMapping("/withdraw")
+    public String withdraw(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtTokenProvider.getUsername(token);
+
+        userRepository.deleteByUsername(username);
+        blacklistService.addToBlacklist(token);
+
+        return "회원 탈퇴 완료";
+    }
+
+    // 로그인된 사용자 정보 가져오기
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return new UserResponse(userDetails.getId(), userDetails.getEmail(), userDetails.getUsername());
+    }
+
 }
