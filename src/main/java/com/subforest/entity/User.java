@@ -44,6 +44,9 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "notification_enabled", nullable = false)
+    private boolean notificationEnabled = true; // 기본값: ON
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
@@ -58,4 +61,5 @@ public class User {
     }
 
     public enum UserStatus { ACTIVE, INACTIVE, DELETED }
+    
 }
