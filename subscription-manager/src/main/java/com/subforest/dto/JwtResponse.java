@@ -1,11 +1,11 @@
 package com.subforest.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JwtResponse {
-    private String token;
-    private String tokenType = "Bearer";
+    private final String token;
+    private final String tokenType = "Bearer";
 }
