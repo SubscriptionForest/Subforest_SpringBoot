@@ -1,12 +1,22 @@
 package com.subforest.controller;
 
-import com.subforest.config.JwtTokenProvider;
+import com.subforest.dto.UserResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.subforest.security.CustomUserDetails;
+import com.subforest.dto.JwtResponse;
+import com.subforest.dto.LoginRequestDto;
+import com.subforest.dto.SignupRequestDto;
 import com.subforest.entity.User;
 import com.subforest.repository.UserRepository;
+import com.subforest.security.JwtTokenProvider;
 import com.subforest.service.BlacklistService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -27,7 +37,7 @@ public class AuthController {
                 .email(request.getEmail().toLowerCase())
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .status(UserStatus.ACTIVE)
+                .status(User.UserStatus.ACTIVE)
                 .build();
 
         userRepository.save(user);
@@ -39,7 +49,7 @@ public class AuthController {
         User found = userRepository.findByEmail(request.getEmail().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없음"));
 
-        if (found.getStatus() == UserStatus.DELETED) {
+        if (found.getStatus() == User.UserStatus.DELETED) {
             throw new RuntimeException("탈퇴한 계정입니다.");
         }
 
@@ -55,7 +65,7 @@ public class AuthController {
     @PostMapping("/logout")
     public String logout(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
-        blacklistService.addToBlacklist(token);
+        blacklistService.addToken(token, LocalDateTime.now().plusHours(1)); // 만료 시간 필요
         return "로그아웃 완료";
     }
 
@@ -65,13 +75,13 @@ public class AuthController {
         String token = authHeader.substring(7);
 
         // 2. 토큰에서 이메일(subject) 꺼내기
-        String email = jwtTokenProvider.getUsername(token);
+        String email = jwtTokenProvider.getEmail(token);
 
         // 3. 이메일로 DB에서 사용자 삭제
         userRepository.deleteByEmail(email);
 
         // 4. 토큰 블랙리스트에 등록 (재사용 방지)
-        blacklistService.addToBlacklist(token);
+        blacklistService.addToken(token, LocalDateTime.now().plusHours(1));
 
         return "회원 탈퇴 완료";
     }

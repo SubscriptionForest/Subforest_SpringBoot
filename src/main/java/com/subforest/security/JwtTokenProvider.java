@@ -1,9 +1,10 @@
-package com.subforest.config;
+package com.subforest.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.Date;
 
@@ -37,5 +38,26 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    // ---------------- 추가 ----------------
+
+    // 요청 헤더에서 토큰 추출
+    public String resolveToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
+        }
+        return null;
+    }
+
+    // 토큰에서 이메일(subject) 가져오기
+    public String getSubject(String token) {
+        return getEmail(token);
+    }
+
+    // 토큰에서 username 가져오기 (email과 동일)
+    public String getUsername(String token) {
+        return getEmail(token);
     }
 }

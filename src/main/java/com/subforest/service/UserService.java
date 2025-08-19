@@ -41,7 +41,7 @@ public class UserService {
     // 계정 비활성화
     public void deactivateAccount(Long userId) {
         User user = getUserInfo(userId);
-        user.setStatus(User.Status.INACTIVE);
+        user.setStatus(User.UserStatus.INACTIVE);
         userRepository.save(user);
     }
 }

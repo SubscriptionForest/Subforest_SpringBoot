@@ -2,7 +2,7 @@ package com.subforest.controller;
 
 import com.subforest.entity.User;
 import com.subforest.service.UserService;
-import com.subforest.security.JwtBlacklistService;
+import com.subforest.service.BlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class MypageController {
 
     private final UserService userService;
-    private final JwtBlacklistService jwtBlacklistService;
+    private final BlacklistService blacklistService;
 
     // 내 정보 조회
     @GetMapping("/me")
@@ -56,7 +56,7 @@ public class MypageController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        jwtBlacklistService.blacklistToken(token);
+        blacklistService.blacklistToken(token);
         return ResponseEntity.ok("{\"message\": \"Logged out successfully\"}");
     }
 }

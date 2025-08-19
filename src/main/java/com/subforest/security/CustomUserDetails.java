@@ -25,9 +25,13 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
+    public String getName() {
+        return user.getName();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // 권한 필요 시 ROLE_USER 등 추가 가능
+        return Collections.emptyList();
     }
 
     @Override
@@ -44,6 +48,6 @@ public class CustomUserDetails implements UserDetails {
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() {
-        return user.getStatus() == User.Status.ACTIVE;
+        return user.getStatus() == User.UserStatus.ACTIVE;
     }
 }

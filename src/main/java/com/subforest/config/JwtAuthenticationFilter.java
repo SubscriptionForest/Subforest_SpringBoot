@@ -1,5 +1,6 @@
 package com.subforest.config;
 
+import com.subforest.security.JwtTokenProvider;
 import com.subforest.service.BlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
