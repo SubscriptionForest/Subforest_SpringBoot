@@ -55,6 +55,12 @@ public class User {
         if (status == null) status = UserStatus.ACTIVE;
     }
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
+    @Column(name = "push_enabled")
+    private Boolean pushEnabled = true;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
