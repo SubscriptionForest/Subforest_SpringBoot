@@ -17,7 +17,7 @@ public class DashboardController {
     //앱 최초 진입/새로고침 시 호출 → 총액, 개수, 파이/막대 데이터 수신 → 차트 렌더링
     //JWT 적용 시 userId 제거하고 인증 사용자 기준으로 조회
     @GetMapping("/summary")
-    public ResponseEntity<DashboardSummaryDto> summary(@RequestParam Long userId) {
+    public ResponseEntity<DashboardSummaryDto> summary(@RequestParam("userId") Long userId) {
         return ResponseEntity.ok(dashboardService.summary(userId));
     }
 }

@@ -1,8 +1,11 @@
 package com.subforest.controller;
 
+import com.subforest.dto.ChangePasswordRequest;
+import com.subforest.dto.ChangePasswordResponse;
 import com.subforest.entity.User;
 import com.subforest.service.UserService;
 import com.subforest.service.BlacklistService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,21 +29,20 @@ public class MypageController {
     @PatchMapping("/notification")
     public ResponseEntity<?> updateNotification(
             @AuthenticationPrincipal(expression = "id") Long userId,
-            @RequestParam boolean enabled
+            @RequestParam("enabled") boolean enabled
     ) {
         boolean result = userService.updateNotification(userId, enabled);
         return ResponseEntity.ok("{\"notificationEnabled\": " + result + "}");
     }
 
     // 비밀번호 변경
-    @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(
+    @PostMapping(value = "/change-password", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ChangePasswordResponse> changePassword(
             @AuthenticationPrincipal(expression = "id") Long userId,
-            @RequestParam String oldPassword,
-            @RequestParam String newPassword
+            @Valid @RequestBody ChangePasswordRequest req
     ) {
-        userService.changePassword(userId, oldPassword, newPassword);
-        return ResponseEntity.ok("{\"message\": \"Password changed successfully\"}");
+        userService.changePassword(userId, req.getOldPassword(), req.getNewPassword());
+        return ResponseEntity.ok(new ChangePasswordResponse("Password changed successfully"));
     }
 
     // 계정 비활성화

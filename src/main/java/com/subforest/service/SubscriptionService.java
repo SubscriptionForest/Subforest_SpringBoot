@@ -164,11 +164,26 @@ public class SubscriptionService {
         });
     }
 
-    //단건 조회(디버그/상세)
+    //단건 상세: fetch join으로 조회 → DTO 반환 (엔티티 직접 반환 금지)
     @Transactional
-    public Subscription getOneEntity(Long id) {
-        return subscriptionRepository.findById(id)
+    public SubscriptionResponseDto getOne(Long id) {
+        Subscription s = subscriptionRepository.findByIdWithJoins(id)
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+
+        String name = (s.getService()!=null)? s.getService().getName() :
+                      (s.getCustomService()!=null? s.getCustomService().getName() : null);
+        String logo = (s.getService()!=null)? s.getService().getLogoUrl() :
+                      (s.getCustomService()!=null? s.getCustomService().getLogoUrl() : null);
+
+        return SubscriptionResponseDto.builder()
+                .subscriptionId(s.getId())
+                .serviceName(name)
+                .logoUrl(logo)
+                .startDate(s.getStartDate().toString())
+                .repeatCycleDays(s.getRepeatCycleDays())
+                .autoPayment(s.getAutoPayment())
+                .isShared(s.getIsShared())
+                .build();
     }
     //임박 순 목록: 네이티브 쿼리 결과(SubscriptionListRow)를 그대로 DTO로 매핑
     @Transactional

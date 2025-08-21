@@ -35,35 +35,35 @@ public class SubscriptionController {
 
     //update
     @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionResponseDto> update(@PathVariable Long id,
+    public ResponseEntity<SubscriptionResponseDto> update(@PathVariable("id") Long id,
                                                           @Valid @RequestBody SubscriptionRequestDto req) {
         return ResponseEntity.ok(subscriptionService.update(id, req));
     }
 
     //delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         subscriptionService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     //기본 목록(페이지네이션/정렬)
     @GetMapping
-    public ResponseEntity<Page<SubscriptionListItemDto>> list(@RequestParam Long userId,
+    public ResponseEntity<Page<SubscriptionListItemDto>> list(@RequestParam("userId") Long userId,
                                                               @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(subscriptionService.list(userId, pageable));
     }
 
-    //단건 상세
+    //단건 상세: 엔티티 대신 DTO로 반환 (Lazy Proxy 직렬화 오류 방지)
     @GetMapping("/{id}")
-    public ResponseEntity<Subscription> getOne(@PathVariable Long id) {
-        return ResponseEntity.ok(subscriptionService.getOneEntity(id));
+    public ResponseEntity<SubscriptionResponseDto> getOne(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(subscriptionService.getOne(id));
     }
 
     //결제 임박 순 목록
     @GetMapping("/upcoming")
     public ResponseEntity<Page<SubscriptionListItemDto>> listUpcoming(
-            @RequestParam Long userId,
+            @RequestParam("userId") Long userId,
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(subscriptionService.listUpcoming(userId, pageable));
     }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import java.util.Optional;
 
 /*
  * SubscriptionRepository:
@@ -57,5 +58,19 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             countQuery = "SELECT COUNT(*) FROM subscriptions s WHERE s.user_id = :userId",
             nativeQuery = true)
     Page<SubscriptionListRow> findUpcomingOrder(@Param("userId") Long userId, Pageable pageable);
+
+    // 목록 조회 시 service, customService를 함께 로딩하여 N+1 제거
+    @EntityGraph(attributePaths = {"service", "customService"})
     Page<Subscription> findByUserId(Long userId, Pageable pageable);
+
+    // 상세 조회 시에도 연관 로딩이 필요할 수 있어 fetch join 버전 (선택 사용)
+    @Query("""
+        select s
+        from Subscription s
+        left join fetch s.service
+        left join fetch s.customService
+        left join fetch s.user
+        where s.id = :id
+    """)
+    Optional<Subscription> findByIdWithJoins(@Param("id") Long id);
 }

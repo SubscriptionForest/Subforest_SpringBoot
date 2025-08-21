@@ -31,7 +31,7 @@ public class PushTokenController {
 
     // 알림 on/off 토글: 본인에 대해서만 변경
     @PostMapping("/toggle")
-    public ResponseEntity<Void> toggle(@RequestParam boolean enabled,
+    public ResponseEntity<Void> toggle(@RequestParam("enabled") boolean enabled,
                                        Authentication authentication) {
         String email = authentication.getName(); //  JWT subject = email
         User user = userRepository.findByEmail(email)

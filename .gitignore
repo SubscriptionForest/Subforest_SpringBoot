@@ -39,4 +39,4 @@ out/
 /secrets/
 *.json
 
-
+application-secret.properties

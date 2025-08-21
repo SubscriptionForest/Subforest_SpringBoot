@@ -26,7 +26,7 @@ public class CustomServiceController {
     //Get/custom-services?userId= : 해당 유저의 커스텀 서비스 목록
     //JWT 적용시 userId 파라미터 제거 -> 토큰 기반으로 전환
     @GetMapping
-    public ResponseEntity<List<CustomService>> list(@RequestParam Long userId) {
+    public ResponseEntity<List<CustomService>> list(@RequestParam("userId") Long userId) {
         return ResponseEntity.ok(catalog.listCustom(userId));
     }
 

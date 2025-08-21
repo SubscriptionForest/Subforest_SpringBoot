@@ -5,6 +5,7 @@ import com.subforest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class UserService {
     }
 
     // 알림 설정 변경
+    @Transactional
     public boolean updateNotification(Long userId, boolean enabled) {
         User user = getUserInfo(userId);
         user.setNotificationEnabled(enabled);
@@ -28,6 +30,7 @@ public class UserService {
     }
 
     // 비밀번호 변경
+    @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User user = getUserInfo(userId);
 
@@ -39,6 +42,7 @@ public class UserService {
     }
 
     // 계정 비활성화
+    @Transactional
     public void deactivateAccount(Long userId) {
         User user = getUserInfo(userId);
         user.setStatus(User.UserStatus.INACTIVE);

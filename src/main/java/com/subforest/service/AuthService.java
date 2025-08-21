@@ -3,8 +3,8 @@ package com.subforest.service;
 import com.subforest.dto.*;
 import com.subforest.entity.User;
 import com.subforest.repository.UserRepository;
-import com.subforest.security.JwtTokenProvider;
-import com.subforest.service.BlacklistService;
+//import com.subforest.security.JwtTokenProvider;	// 제거
+import com.subforest.security.JwtUtil;			// 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;                    // JwtUtil 주입
     private final BlacklistService blacklistService;
 
     /** 회원가입 */
@@ -50,7 +50,8 @@ public class AuthService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String token = jwtTokenProvider.createToken(user.getEmail());
+        // JwtUtil로 발급
+        String token = jwtUtil.generateToken(user.getEmail());
         return new LoginResponse(token, user.getEmail(), user.getName());
     }
 
