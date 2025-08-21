@@ -45,8 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         String auth = request.getHeader("Authorization");
-        log.info("[JwtFilter] enter uri={} auth={}", uri,
-                auth == null ? "null" : (auth.length() > 30 ? auth.substring(0,15)+"...(len="+auth.length()+")" : auth));
+        //log.info("[JwtFilter] enter uri={} auth={}", uri, auth == null ? "null" : (auth.length() > 30 ? auth.substring(0,15)+"...(len="+auth.length()+")" : auth));
 
         if (auth == null || !auth.startsWith("Bearer ")) {
             chain.doFilter(request, response);
@@ -67,7 +66,7 @@ public class JwtFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         } catch (io.jsonwebtoken.JwtException e) {
             String sample = token.length() > 30 ? token.substring(0,15)+"..."+token.substring(token.length()-15) : token;
-            log.warn("JWT verify failed: {} token={}", e.getClass().getSimpleName(), sample);
+            //log.warn("JWT verify failed: {} token={}", e.getClass().getSimpleName(), sample);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"invalid_token\",\"message\":\"" + e.getClass().getSimpleName() + "\"}");

@@ -2,6 +2,7 @@ package com.subforest.controller;
 
 import com.subforest.dto.ChangePasswordRequest;
 import com.subforest.dto.ChangePasswordResponse;
+import com.subforest.dto.NotificationToggleReq;
 import com.subforest.entity.User;
 import com.subforest.service.UserService;
 import com.subforest.service.BlacklistService;
@@ -28,9 +29,10 @@ public class MypageController {
     // 알림 설정 변경
     @PatchMapping("/notification")
     public ResponseEntity<?> updateNotification(
-            @AuthenticationPrincipal(expression = "id") Long userId,
-            @RequestParam("enabled") boolean enabled
+        @AuthenticationPrincipal(expression = "id") Long userId,
+        @RequestBody NotificationToggleReq req
     ) {
+        boolean enabled = req.getNotificationEnabled();
         boolean result = userService.updateNotification(userId, enabled);
         return ResponseEntity.ok("{\"notificationEnabled\": " + result + "}");
     }
