@@ -21,7 +21,6 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-
     @Query(value = """
         SELECT 
           s.id,
