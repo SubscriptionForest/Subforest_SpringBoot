@@ -4,8 +4,11 @@ import com.subforest.dto.SubscriptionListRow;
 import com.subforest.entity.Subscription;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /*
  * SubscriptionRepository:
@@ -21,6 +24,27 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
+    /**
+     * [N+1 해결] fetch join을 사용하여 연관된 User와 Service 정보를 한 번에 가져옵니다.
+     * 대시보드 요약 및 일반 목록 조회 시 사용됩니다.
+     */
+    @Query("select s from Subscription s " +
+            "join fetch s.user " +
+            "left join fetch s.service " +
+            "left join fetch s.customService " +
+            "where s.user.id = :userId")
+    Page<Subscription> findByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * [추가] 스케줄러(ReminderScheduler)에서 사용할 전체 조회 최적화
+     * 모든 구독 정보를 가져올 때 연관된 엔티티를 fetch join하여 N+1 문제를 방지합니다.
+     */
+    @Query("select s from Subscription s " +
+            "join fetch s.user " +
+            "left join fetch s.service " +
+            "left join fetch s.customService")
+    List<Subscription> findAllWithDetails();
+
     @Query(value = """
         SELECT 
           s.id,
@@ -55,6 +79,8 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
         """,
             countQuery = "SELECT COUNT(*) FROM subscriptions s WHERE s.user_id = :userId",
             nativeQuery = true)
+
     Page<SubscriptionListRow> findUpcomingOrder(@Param("userId") Long userId, Pageable pageable);
-    Page<Subscription> findByUserId(Long userId, Pageable pageable);
+    //Page<Subscription> findByUserId(Long userId, Pageable pageable);
+
 }
