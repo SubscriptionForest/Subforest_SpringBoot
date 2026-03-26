@@ -5,6 +5,7 @@ import com.subforest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,5 +44,19 @@ public class UserService {
         User user = getUserInfo(userId);
         user.setStatus(User.Status.INACTIVE);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateFcmToken(String email, String fcmToken) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+        user.setFcmToken(fcmToken);
+    }
+
+    @Transactional
+    public void updatePushEnabled(String email, boolean enabled) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+        user.setPushEnabled(enabled);
     }
 }

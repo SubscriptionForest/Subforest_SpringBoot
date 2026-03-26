@@ -186,6 +186,21 @@ public class SubscriptionService {
                 .shared(r.getIsShared())
                 .build());
     }
+    @Transactional(readOnly = true)
+    public SubscriptionListItemDto getOne(Long id) {
+        Subscription s = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+        LocalDate today = LocalDate.now();
+        String name = s.getService() != null ? s.getService().getName() : s.getCustomService().getName();
+        String logo = s.getService() != null ? s.getService().getLogoUrl() : s.getCustomService().getLogoUrl();
+        return SubscriptionListItemDto.builder()
+                .id(s.getId()).serviceName(name).logoUrl(logo)
+                .amount(s.getAmount()).repeatCycleDays(s.getRepeatCycleDays())
+                .nextBillingDate(s.getNextBillingDate(today).toString())
+                .remainingDays(s.getRemainingDays(today))
+                .autoPayment(s.getAutoPayment()).shared(s.getIsShared())
+                .build();
+    }
 
 
 }

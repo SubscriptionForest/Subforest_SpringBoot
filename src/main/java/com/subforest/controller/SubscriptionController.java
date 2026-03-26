@@ -3,7 +3,6 @@ package com.subforest.controller;
 import com.subforest.dto.SubscriptionListItemDto;
 import com.subforest.dto.SubscriptionRequestDto;
 import com.subforest.dto.SubscriptionResponseDto;
-import com.subforest.entity.Subscription;
 import com.subforest.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,8 +55,8 @@ public class SubscriptionController {
 
     //단건 상세
     @GetMapping("/{id}")
-    public ResponseEntity<Subscription> getOne(@PathVariable Long id) {
-        return ResponseEntity.ok(subscriptionService.getOneEntity(id));
+    public ResponseEntity<SubscriptionListItemDto> getOne(@PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.getOne(id));
     }
 
     //결제 임박 순 목록
