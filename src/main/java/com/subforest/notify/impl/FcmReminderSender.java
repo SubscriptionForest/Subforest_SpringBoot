@@ -5,6 +5,7 @@ import com.subforest.entity.Subscription;
 import com.subforest.entity.User;
 import com.subforest.notify.ReminderSender;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Component
 public class FcmReminderSender implements ReminderSender {
 
+    @Async
     @Override
     public void send(User user, Subscription sub, LocalDate nextDate) {
         if (user.getFcmToken() == null || user.getFcmToken().isBlank()) {

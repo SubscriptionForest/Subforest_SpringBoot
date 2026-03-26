@@ -23,7 +23,9 @@ public class ReminderScheduler {
         LocalDate today = LocalDate.now();
         LocalDate target = today.plusDays(3);
 
-        subscriptionRepository.findAll().forEach(sub -> {
+        //subscriptionRepository.findAll().forEach(sub -> {
+        // findAll() 대신 fetch join이 적용된 메서드 사용
+        subscriptionRepository.findAllWithDetails().forEach(sub -> {
             LocalDate next = sub.getNextBillingDate(today);
             if (next != null && next.equals(target)) {
                 User user = sub.getUser();
