@@ -40,3 +40,7 @@ out/
 *.json
 
 
+### Secrets ###
+**/secrets/
+.env
+
